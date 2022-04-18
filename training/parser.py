@@ -2,7 +2,7 @@
 This module contains all the necessary functions for parsing training data
 """
 
-TAGGINGS_PATH = "data/tagging.csv"
+TAGGING_PATH = "data/tagging.csv"
 SUBSCRIPTS_FOLDER_PATH = "data/video_subsripts"
 
 def string_from_transription(video_name: str) -> str:
@@ -24,9 +24,9 @@ def get_label_by_maj(labels_lst: list) -> int:
 
 def build_csv_from_taggings(dest_path: str):
     """
-    Builds a new .csv file with three columns "name", "subscript" and "label" from taggings and subscripts files
-    specified in TAGGINGS_PATH and SUBSCRIPTS_FOLDER_PATH variables.
-    The "name" column contains names of the videos in upper case, as it appears in TAGGINGS_PATH file.
+    Builds a new .csv file with three columns "name", "subscript" and "label" from tagging and subscripts files
+    specified in TAGGING_PATH and SUBSCRIPTS_FOLDER_PATH variables.
+    The "name" column contains names of the videos in upper case, as it appears in TAGGING_PATH file.
     The "subscript" column contains subscripts of the videos.
     The "label" column contains final labels of the videos returned by get_label_by_maj function.
     Possible labels are: -1=center, 1=base, 0=both.
