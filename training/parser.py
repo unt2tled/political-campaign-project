@@ -1,9 +1,11 @@
 """
 This module contains all the necessary functions for parsing training data
 """
+import csv
 
 TAGGING_PATH = "data/tagging.csv"
 SUBSCRIPTS_FOLDER_PATH = "data/video_subsripts"
+
 
 def string_from_transription(video_name: str) -> str:
     """
@@ -14,6 +16,7 @@ def string_from_transription(video_name: str) -> str:
     """
     pass
 
+
 def get_label_by_maj(labels_lst: list) -> int:
     """
     Receives a list of integer labels (-1=center, 1=base, 0=both) and returns the most frequent one.
@@ -21,6 +24,24 @@ def get_label_by_maj(labels_lst: list) -> int:
     :param labels_lst: list of labels.
     """
     return max(set(labels_lst), key=labels_lst.count)
+
+
+def retrieve_tags(tags_lst: list) -> list:
+    """
+    Accepts list of strings and returns list of integers such that every label substituted with its numerical value
+    (-1=center, 1=base, 0=both)
+    :param tags_lst:
+    """
+    result_lst = []
+    for entry in tags_lst:
+        if entry == "base":
+            result_lst.append(1)
+        elif entry == "center":
+            result_lst.append(-1)
+        elif entry == "both":
+            result_lst.append(0)
+    return result_lst
+
 
 def build_csv_from_taggings(dest_path: str):
     """
@@ -33,4 +54,18 @@ def build_csv_from_taggings(dest_path: str):
 
     :param dest_path: destination path of a newly created .csv file.
     """
-    pass
+    with open(TAGGING_PATH, "r") as tagging_file:
+        tagging_reader = csv.DictReader(tagging_file)
+        with open(dest_path, "w", newline="") as output_file:
+            fieldnames = ["text", "label"]
+            writer = csv.DictWriter(output_file, fieldnames=fieldnames)
+            writer.writeheader()
+            for row in tagging_reader:
+                title = row["Title"]
+                tagging_list = retrieve_tags(row.values())
+                # Ignore empty labeling
+                if not tagging_list:
+                    continue
+                # Calculate label
+                label = get_label_by_maj(tagging_list)
+                writer.writerow({"text": string_from_transription(title), "label": label})
