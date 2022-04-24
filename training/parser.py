@@ -15,7 +15,12 @@ def string_from_transription(video_name: str) -> str:
     :param video_name: name string of the video, For example: PRES_TRUSTEDLEADERSHIP_KASICH_WON'T_PLAY.
     """
     file = open(video_name, "r")
-    data = file.read()
+    data = file.readlines()[4::2]
+    ret = ""
+    for line in data:
+        ret += line.strip()
+        ret += " "
+    return ret
 
 
 
@@ -71,3 +76,6 @@ def build_csv_from_taggings(dest_path: str):
                 # Calculate label
                 label = get_label_by_maj(tagging_list)
                 writer.writerow({"text": string_from_transription(title), "label": label})
+
+
+str = string_from_transription("C:/Users/maor9/IdeaProjects/political-campaign-project/text files/PRES-45COMMITTEE-50-POINTS-AHEAD (English)_text.txt")
