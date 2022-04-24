@@ -12,7 +12,9 @@ def string_from_transription(video_name: str) -> str:
 
     :param video_name: name string of the video, For example: PRES_TRUSTEDLEADERSHIP_KASICH_WON'T_PLAY.
     """
-    pass
+    file = open(video_name, "r")
+    data = file.read()
+
 
 def get_label_by_maj(labels_lst: list) -> int:
     """
