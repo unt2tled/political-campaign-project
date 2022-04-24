@@ -76,6 +76,3 @@ def build_csv_from_taggings(dest_path: str):
                 # Calculate label
                 label = get_label_by_maj(tagging_list)
                 writer.writerow({"text": string_from_transription(title), "label": label})
-
-
-str = string_from_transription("C:/Users/maor9/IdeaProjects/political-campaign-project/text files/PRES-45COMMITTEE-50-POINTS-AHEAD (English)_text.txt")
