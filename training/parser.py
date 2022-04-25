@@ -14,14 +14,16 @@ def string_from_transription(video_name: str) -> str:
 
     :param video_name: name string of the video, For example: PRES_TRUSTEDLEADERSHIP_KASICH_WON'T_PLAY.
     """
-    file = open(video_name, "r")
-    data = file.readlines()[4::2]
+    try:
+        file = open(SUBSCRIPTS_FOLDER_PATH + "/" + video_name + "_text.txt", "r")
+    except FileNotFoundError:
+        return ""
+    data = file.readlines()
     ret = ""
     for line in data:
         ret += line.strip()
         ret += " "
     return ret
-
 
 
 def get_label_by_maj(labels_lst: list) -> int:
