@@ -26,13 +26,22 @@ def string_from_transription(video_name: str) -> str:
     return ret
 
 
-def get_label_by_maj(labels_lst: list) -> int:
+def get_label_by_maj(labels_lst: list, label_type: str) -> int:
     """
-    Receives a list of integer labels (-1=center, 1=base, 0=both) and returns the most frequent one.
+    Receives a list of integer labels (-1=center, 1=base, 0=both) and returns tag 0 or 1 for base or center by the most frequent one.
 
     :param labels_lst: list of labels.
+    :param label_type: type of labeel (base or center).
     """
-    return max(set(labels_lst), key=labels_lst.count)
+    s = sum(labels_lst)
+    label_num = 0;
+    if label_type == "base":
+        label_num = 1
+    if s > 0:
+        return label_num
+    elif s < 0:
+        return 1-label_num
+    return 1
 
 
 def retrieve_tags(tags_lst: list) -> list:
@@ -52,21 +61,20 @@ def retrieve_tags(tags_lst: list) -> list:
     return result_lst
 
 
-def build_csv_from_taggings(dest_path: str):
+def build_csv_from_taggings(dest_path: str, label_type: str):
     """
     Builds a new .csv file with three columns "name", "subscript" and "label" from tagging and subscripts files
     specified in TAGGING_PATH and SUBSCRIPTS_FOLDER_PATH variables.
     The "name" column contains names of the videos in upper case, as it appears in TAGGING_PATH file.
     The "subscript" column contains subscripts of the videos.
-    The "label" column contains final labels of the videos returned by get_label_by_maj function.
-    Possible labels are: -1=center, 1=base, 0=both.
-
+    The "label" column contains final labels of the videos.
+    
     :param dest_path: destination path of a newly created .csv file.
     """
     with open(TAGGING_PATH, "r") as tagging_file:
         tagging_reader = csv.DictReader(tagging_file)
         with open(dest_path, "w", newline="") as output_file:
-            fieldnames = ["text", "label"]
+            fieldnames = ["name", "text", "label"]
             writer = csv.DictWriter(output_file, fieldnames=fieldnames)
             writer.writeheader()
             for row in tagging_reader:
@@ -76,5 +84,14 @@ def build_csv_from_taggings(dest_path: str):
                 if not tagging_list:
                     continue
                 # Calculate label
-                label = get_label_by_maj(tagging_list)
-                writer.writerow({"text": string_from_transription(title), "label": label})
+                label = get_label_by_maj(tagging_list, label_type)
+                transcription = string_from_transription(title)
+                # Ignore empty trascripts
+                if transcription == "":
+                    continue
+                writer.writerow({"name": title, "text": transcription, "label": label})
+
+
+if __name__ == "__main__":
+    build_csv_from_taggings("tags_base.csv", "base")
+    build_csv_from_taggings("tags_center.csv", "center")
