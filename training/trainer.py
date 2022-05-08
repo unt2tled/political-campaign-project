@@ -48,5 +48,3 @@ trainer = Trainer(
 )
 
 trainer.train()
-predictions = trainer.predict(tokenized_ds["valid"])
-print("Here: "+str(predictions.label_ids))
