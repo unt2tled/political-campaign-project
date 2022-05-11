@@ -7,12 +7,13 @@ TAGGING_PATH = "data/tagging.csv"
 SUBSCRIPTS_FOLDER_PATH = "data/video_subsripts"
 
 
-def string_from_transription(video_name: str) -> str:
+def string_from_transription(video_name: str, remove_char="\"") -> str:
     """
     Loads SUBSCRIPTS_FOLDER_PATH/[video_name]_text.txt file, removes all the metadata (timestamps, etc.), linebreaks
     symbols and returns transcription as a string object.
 
     :param video_name: name string of the video, For example: PRES_TRUSTEDLEADERSHIP_KASICH_WON'T_PLAY.
+    :param remove_char charaters to remove from the returned string
     """
     try:
         file = open(SUBSCRIPTS_FOLDER_PATH + "/" + video_name + "_text.txt", "r")
@@ -23,7 +24,7 @@ def string_from_transription(video_name: str) -> str:
     for line in data:
         ret += line.strip()
         ret += " "
-    return ret
+    return ret.translate({ord(k):None for k in remove_char})
 
 
 def get_label_by_maj(labels_lst: list, label_type: str) -> int:
@@ -61,7 +62,7 @@ def retrieve_tags(tags_lst: list) -> list:
     return result_lst
 
 
-def build_csv_from_taggings(dest_path: str, label_type: str):
+def build_csv_from_taggings(dest_path: str, label_type: str, remove_char="\""):
     """
     Builds a new .csv file with three columns "name", "subscript" and "label" from tagging and subscripts files
     specified in TAGGING_PATH and SUBSCRIPTS_FOLDER_PATH variables.
@@ -85,7 +86,7 @@ def build_csv_from_taggings(dest_path: str, label_type: str):
                     continue
                 # Calculate label
                 label = get_label_by_maj(tagging_list, label_type)
-                transcription = string_from_transription(title)
+                transcription = string_from_transription(title, remove_char=remove_char)
                 # Ignore empty trascripts
                 if transcription == "":
                     continue
