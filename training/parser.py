@@ -25,7 +25,9 @@ def string_from_transription(video_name: str, remove_char="\"") -> str:
     for line in data:
         ret += line.strip()
         ret += " "
-    return ret.translate({ord(k):None for k in remove_char})
+    transcription = ret.translate({ord(k):None for k in remove_char})
+    transcription = re.sub("\d\d:\d\d:\d\d Speaker \d","", transcription)
+    return transcription
 
 
 def get_label_by_maj(labels_lst: list, label_type: str) -> int:
@@ -108,7 +110,6 @@ def build_csv_from_taggings(dest_path: str, label_type: str, remove_char="\"",de
                 # Ignore empty trascripts
                 if transcription == "":
                     continue
-                transcription = re.sub("\d\d:\d\d:\d\d Speaker 1","",transcription)
                 writer.writerow({"name": title, "text": transcription, "label": label})
 
 

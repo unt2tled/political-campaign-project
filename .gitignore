@@ -1495,3 +1495,5 @@ training/venv/Lib/site-packages/_distutils_hack/__pycache__/override.cpython-38.
 training/tags.csv
 training/data/tagging.csv
 *.csv
+training/data/data.zip
+training/data.zip
