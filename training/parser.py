@@ -35,6 +35,8 @@ def get_label_by_maj(labels_lst: list, label_type: str) -> int:
     :param labels_lst: list of labels.
     :param label_type: type of labeel (base or center).
     """
+    if (label_type == None):
+        return get_label_by_maj_3(labels_lst)
     s = sum(labels_lst)
     label_num = 0;
     if label_type == "base":
@@ -45,6 +47,19 @@ def get_label_by_maj(labels_lst: list, label_type: str) -> int:
         return 1-label_num
     return 1
 
+def get_label_by_maj_3(labels_lst: list) -> int:
+    """
+    Receives a list of integer labels (-1=center, 1=base, 0=both) and returns tag 0 or 1 for base or center by the most frequent one.
+
+    :param labels_lst: list of labels.
+    :param label_type: type of labeel (base-2 or both-1 or center-0).
+    """
+    s = sum(labels_lst)
+    if s>0:
+        return 2
+    if s<0:
+        return 0
+    return 1
 
 def retrieve_tags(tags_lst: list) -> list:
     """
@@ -63,7 +78,7 @@ def retrieve_tags(tags_lst: list) -> list:
     return result_lst
 
 
-def build_csv_from_taggings(dest_path: str, label_type: str, remove_char="\""):
+def build_csv_from_taggings(dest_path: str, label_type: str, remove_char="\"",definite_taggings_only=True):
     """
     Builds a new .csv file with three columns "name", "subscript" and "label" from tagging and subscripts files
     specified in TAGGING_PATH and SUBSCRIPTS_FOLDER_PATH variables.
@@ -85,6 +100,8 @@ def build_csv_from_taggings(dest_path: str, label_type: str, remove_char="\""):
                 # Ignore empty labeling
                 if not tagging_list:
                     continue
+                if definite_taggings_only and (len([x for x in tagging_list if x==1])*len([x for x in tagging_list if x==-1])>0):
+                    continue
                 # Calculate label
                 label = get_label_by_maj(tagging_list, label_type)
                 transcription = string_from_transription(title, remove_char=remove_char)
@@ -98,3 +115,4 @@ def build_csv_from_taggings(dest_path: str, label_type: str, remove_char="\""):
 if __name__ == "__main__":
     build_csv_from_taggings("tags_base.csv", "base")
     build_csv_from_taggings("tags_center.csv", "center")
+    build_csv_from_taggings("tags.csv", None)
