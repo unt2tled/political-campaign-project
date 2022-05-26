@@ -2,9 +2,10 @@
 This module contains all the necessary functions for parsing training data
 """
 import csv
+import re
 
 TAGGING_PATH = "data/tagging.csv"
-SUBSCRIPTS_FOLDER_PATH = "data/video_subsripts"
+SUBSCRIPTS_FOLDER_PATH = "data/video_subscripts"
 
 
 def string_from_transription(video_name: str, remove_char="\"") -> str:
@@ -90,6 +91,7 @@ def build_csv_from_taggings(dest_path: str, label_type: str, remove_char="\""):
                 # Ignore empty trascripts
                 if transcription == "":
                     continue
+                transcription = re.sub("\d\d:\d\d:\d\d Speaker 1","",transcription)
                 writer.writerow({"name": title, "text": transcription, "label": label})
 
 

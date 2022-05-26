@@ -1,6 +1,9 @@
+'''trainer '''
 """
 This module contains CampaignTextModel class for training base/center model
 """
+!pip install transformers
+!pip install datasets
 from transformers import AutoTokenizer
 from datasets import load_dataset
 from datasets import DatasetDict
@@ -50,6 +53,7 @@ class CampaignTextModel:
               decay=0.01):
         # Tokenizer tuning
         tokenizer = AutoTokenizer.from_pretrained(self.lang_model_name)
+        self.tokenizer = tokenizer
         tokenized_ds = self.dataset.map(lambda examples: tokenizer(examples["text"], truncation=True), batched=True)
         data_collator = DataCollatorWithPadding(tokenizer=tokenizer)
         model = AutoModelForSequenceClassification.from_pretrained(self.lang_model_name, num_labels=2)
@@ -76,23 +80,40 @@ class CampaignTextModel:
         # Train model
         trainer.train()
         self.trainer = trainer
+        print(trainer)
 
     def predict_by_text(self, text_string: str, return_number=False):
         # Build dataset with one row
-        data_to_predict = Dataset.from_dict({"text": text_string})
-        predictions = self.trainer.predict(data_to_predict)
+        print(text_string)
+        data_to_predict = Dataset.from_dict({"text": [text_string]})
+        print('data_to_predict')
+        print(data_to_predict.data)
+        def tokenizer(examples):
+            print('#####')
+            print(examples)
+            print('#####')
+            return self.tokenizer(examples["text"], truncation=True)
+        tokenized_ds = data_to_predict.map(lambda examples: tokenizer(examples), batched=True)
+        print('tokenized_ds')
+        print(tokenized_ds)
+        predictions = self.trainer.predict(tokenized_ds)
+        print('predictions.predictions')
+        print(predictions.predictions)
         pred_num = np.argmax(predictions.predictions, axis=-1)
+        print('pred_num')
+        print(pred_num)
         if return_number:
             return pred_num
         return self.direction if pred_num else "NOT_" + self.direction
 
 
 if __name__ == "__main__":
-    text = """
-    The crime Medicare fraud. The victims American taxpayers. The boss Mitt Romney Romney supervised to company guilty. 
-    A massive Medicare fraud. That's a fact. 25 million dollars in unnecessary blood tests. Right under Romney's nose. 
-    """
-    m = CampaignTextModel("distilbert-base-uncased", BASE)
-    m.load_data_from_csv("tags_base.csv", 0.1)
+    #text = "The crime Medicare fraud. The victims American taxpayers. The boss Mitt Romney Romney supervised to company guilty. A massive Medicare fraud. That's a fact. 25 million dollars in unnecessary blood tests. Right under Romney's nose."
+    #text = "Vote for Donald Trump. He's the man."
+    #text = "Hilary Clinton is such a turd sandwich. If you don't vote this elections she will destroy us all. I'm Donald Trump and I approve this message."
+    #print(text)
+    text = ""
+    m = CampaignTextModel("distilbert-base-uncased", CENTER)
+    m.load_data_from_csv("tags_center.csv", 0.1)
     m.train(epochs=40)
     print(m.predict_by_text(text))
