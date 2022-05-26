@@ -80,7 +80,7 @@ def retrieve_tags(tags_lst: list) -> list:
     return result_lst
 
 
-def build_csv_from_taggings(dest_path: str, label_type: str, remove_char="\"",definite_taggings_only=True):
+def build_csv_from_taggings(dest_path: str, label_type: str, remove_char="\"", definite_taggings_only=True):
     """
     Builds a new .csv file with three columns "name", "subscript" and "label" from tagging and subscripts files
     specified in TAGGING_PATH and SUBSCRIPTS_FOLDER_PATH variables.
@@ -114,6 +114,6 @@ def build_csv_from_taggings(dest_path: str, label_type: str, remove_char="\"",de
 
 
 if __name__ == "__main__":
-    build_csv_from_taggings("tags_base.csv", "base")
-    build_csv_from_taggings("tags_center.csv", "center")
-    build_csv_from_taggings("tags.csv", None)
+    build_csv_from_taggings("tags_base.csv", "base", definite_taggings_only = False)
+    build_csv_from_taggings("tags_center.csv", "center", definite_taggings_only = False)
+    build_csv_from_taggings("tags.csv", None, definite_taggings_only = False)
