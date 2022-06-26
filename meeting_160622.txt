@@ -1,0 +1,12 @@
+**focus on base: weighting for base**
+looks like there is no signal
+check what describes base mistakes
+what describes the
+euristic suggestion: favor the Americans (but it's a game on scarce data)
+** now that the text model is better **
+emotion recognition of face *strategic question*
+** important to improve base: so it will be better random **
+https://pyimagesearch.com/2022/03/07/ocring-video-streams/
+
+21.6.22:
+https://pytesseract.readthedocs.io/en/latest/
