@@ -1,7 +1,6 @@
 # ref: https://towardsdatascience.com/understand-text-summarization-and-create-your-own-summarizer-in-python-b26a9f09fc70
 
-#!/usr/bin/env python
-# coding: utf-8
+
 
 from nltk.corpus import stopwords
 from nltk.cluster.util import cosine_distance
@@ -97,6 +96,6 @@ class SummarizationClass:
 input_file_path = 'tagging.csv'
 output_file_path = 'summarized_tagging.csv'
 
-df = pd.read_csv(input_file_path)
+df = pd.read_csv(input_file_path,encoding='utf8')
 df['summarized_text'] = df['text'].apply(lambda x: SummarizationClass.generate_summary(x, 1))
-df.to_csv(output_file_path)
+df.to_csv(output_file_path,encoding='utf8',index=False)

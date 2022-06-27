@@ -1,9 +1,11 @@
 **textual features**
-frequency of words and candidate mentioned
-positive words and negative ones
-python library of all faces of candidates
-party feature (can be given with the data / predicted)
-primary / non primary
-add the features to the classifiers and not for the language model
+frequency of words - Deam
+frequency candidate mentioned - Maor
+positive words and negative ones - TBD
+python library of all faces of candidates - Maor
+party feature (can be given with the data / predicted) - Maor ask Udi
+primary / non primary - Maor ask Udi
+add the features to the classifiers and not for the language model - TBD
 WE HAVE ENOUGH FOR TEXT :) (don't rush to pretrain on political campaings texts)
-try a model with no both (as two-headed model or without both)
+try a model with no both (as 1. two-headed model - Maor or 2. without both - Dean TBD)
+
