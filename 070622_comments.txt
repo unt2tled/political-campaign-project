@@ -14,5 +14,5 @@ action items:
 1. training log (loss) - ask Edo about the meaning of our results of training Vix - Maor - V
 2. splits to 3 parts also for the test - Dean - V
 3. pre-training on similar text from websites - Mark (take your time) - not so crucial right now
-4. summarization (as part of summarization network. Should be efficient.) - Maor (Dean assistant)
-5. counting words distriburion - Mark (easy peasy)
+4. summarization (as part of summarization network. Should be efficient.) - Dean - Processing
+5. counting words distriburion - Dean - V
