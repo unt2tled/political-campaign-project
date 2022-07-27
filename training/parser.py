@@ -1,119 +1,55 @@
-"""
-This module contains all the necessary functions for parsing training data
-"""
-import csv
-import re
+import pandas as pd
+import numpy as np
 
-TAGGING_PATH = "data/tagging.csv"
-SUBSCRIPTS_FOLDER_PATH = "data/video_subscripts"
-
-
-def string_from_transription(video_name: str, remove_char="\"") -> str:
-    """
-    Loads SUBSCRIPTS_FOLDER_PATH/[video_name]_text.txt file, removes all the metadata (timestamps, etc.), linebreaks
-    symbols and returns transcription as a string object.
-
-    :param video_name: name string of the video, For example: PRES_TRUSTEDLEADERSHIP_KASICH_WON'T_PLAY.
-    :param remove_char charaters to remove from the returned string
-    """
-    try:
-        file = open(SUBSCRIPTS_FOLDER_PATH + "/" + video_name + "_text.txt", "r")
-    except FileNotFoundError:
-        return ""
-    data = file.readlines()
-    ret = ""
-    for line in data:
-        ret += line.strip()
-        ret += " "
-    transcription = ret.translate({ord(k):None for k in remove_char})
-    transcription = re.sub("\d\d:\d\d:\d\d Speaker \d","", transcription)
-    return transcription
-
-
-def get_label_by_maj(labels_lst: list, label_type: str) -> int:
-    """
-    Receives a list of integer labels (-1=center, 1=base, 0=both) and returns tag 0 or 1 for base or center by the most frequent one.
-
-    :param labels_lst: list of labels.
-    :param label_type: type of labeel (base or center).
-    """
-    if (label_type == None):
-        return get_label_by_maj_3(labels_lst)
-    s = sum(labels_lst)
-    label_num = 0;
-    if label_type == "base":
-        label_num = 1
-    if s > 0:
-        return label_num
-    elif s < 0:
-        return 1-label_num
-    return 1
-
-def get_label_by_maj_3(labels_lst: list) -> int:
-    """
-    Receives a list of integer labels (-1=center, 1=base, 0=both) and returns tag 0 or 1 for base or center by the most frequent one.
-
-    :param labels_lst: list of labels.
-    :param label_type: type of labeel (base-2 or both-1 or center-0).
-    """
-    s = sum(labels_lst)
-    if s>0:
-        return 2
-    if s<0:
-        return 0
-    return 1
-
-def retrieve_tags(tags_lst: list) -> list:
-    """
-    Accepts list of strings and returns list of integers such that every label substituted with its numerical value
-    (-1=center, 1=base, 0=both)
-    :param tags_lst:
-    """
-    result_lst = []
-    for entry in tags_lst:
-        if entry == "base":
-            result_lst.append(1)
-        elif entry == "center":
-            result_lst.append(-1)
-        elif entry == "both":
-            result_lst.append(0)
-    return result_lst
-
-
-def build_csv_from_taggings(dest_path: str, label_type: str, remove_char="\"", definite_taggings_only=True):
-    """
-    Builds a new .csv file with three columns "name", "subscript" and "label" from tagging and subscripts files
-    specified in TAGGING_PATH and SUBSCRIPTS_FOLDER_PATH variables.
-    The "name" column contains names of the videos in upper case, as it appears in TAGGING_PATH file.
-    The "subscript" column contains subscripts of the videos.
-    The "label" column contains final labels of the videos.
-    
-    :param dest_path: destination path of a newly created .csv file.
-    """
-    with open(TAGGING_PATH, "r") as tagging_file:
-        tagging_reader = csv.DictReader(tagging_file)
-        with open(dest_path, "w", newline="") as output_file:
-            fieldnames = ["name", "text", "label"]
-            writer = csv.DictWriter(output_file, fieldnames=fieldnames)
-            writer.writeheader()
-            for row in tagging_reader:
-                title = row["Title"]
-                tagging_list = retrieve_tags(row.values())
-                # Ignore empty labeling
-                if not tagging_list:
-                    continue
-                if definite_taggings_only and (len([x for x in tagging_list if x==1])*len([x for x in tagging_list if x==-1])>0):
-                    continue
-                # Calculate label
-                label = get_label_by_maj(tagging_list, label_type)
-                transcription = string_from_transription(title, remove_char=remove_char)
-                # Ignore empty trascripts
-                if transcription == "":
-                    continue
-                writer.writerow({"name": title, "text": transcription, "label": label})
-
-
-if __name__ == "__main__":
-    build_csv_from_taggings("tags_base.csv", "base", definite_taggings_only = False)
-    build_csv_from_taggings("tags_center.csv", "center", definite_taggings_only = False)
-    build_csv_from_taggings("tags.csv", None, definite_taggings_only = False)
+df = pd.read_csv('data/tagging_230722.csv')    
+dft = pd.read_csv('data/tagging_230722.csv')
+taggers = [c for c in dft.columns.values if c!='Title' and c!='year']
+df = df.merge(dft, left_on='name',right_on='Title')
+df.drop_duplicates('name',inplace=True)
+del df['Title']
+del dft
+df['definite'] = 0
+for tagger in taggers:
+    df[tagger] = df[tagger].map({'base':1, 'Base':1,'both':0, 'base/both':0, 'center':-1,np.nan:0,'Already Tagged':0}).astype('int')
+    df['definite'] = df['definite'] | np.where(df[tagger]==0,0,2**((df[tagger]+1)/2)).astype('int')
+#definite data filter
+df = df[df['definite']!=3]
+del df['definite']
+#code label
+df['code_label'] = np.sign(df[taggers].sum(axis=1))
+#base model
+df['label'] = (df['code_label']>=0)+0
+df[['name','text','label']].to_csv('tags_base.csv',index=False)
+#center model
+df['label'] = (df['code_label']<=0)+0
+df[['name','text','label']].to_csv('tags_center.csv',index=False)
+#3Label mode
+df['label'] = df['code_label']+1
+df[['name','text','label']].to_csv('tags.csv',index=False)
+#split to halves
+df['text'] = df['text'].str.replace('"','')
+df['sentences'] = df['text'].str.split('.')
+df['sentences'] = df['sentences'].apply(lambda x: [e.strip() for e in x])
+df['text1'] = df['sentences'].apply(lambda x:". ".join(x[:int(len(x)/2)])+".")
+df['copy']=0
+tmp_df = df.copy()
+tmp_df['copy']=1
+tmp_df['text1'] = tmp_df['sentences'].apply(lambda x:".".join(x[int(len(x)/2):]))
+df = pd.concat([df,tmp_df],axis=0)
+df.reset_index(inplace=True)
+df['text'] = df['text1']
+df.sort_values(['name'],inplace=True)
+del tmp_df
+del df['text1']
+del df['sentences']
+#code label
+df['code_label'] = np.sign(df[taggers].sum(axis=1))
+#base model
+df['label'] = (df['code_label']>=0)+0
+df[['name','copy','text','label']].to_csv('tags_base_double.csv',index=False)
+#center model
+df['label'] = (df['code_label']<=0)+0
+df[['name','text','label']].to_csv('tags_center_double.csv',index=False)
+#3Label mode
+df['label'] = df['code_label']+1
+df[['name','text','label']].to_csv('tags_double.csv',index=False)
