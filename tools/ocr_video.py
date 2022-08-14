@@ -3,29 +3,12 @@ import os
 import cv2
 import shutil
 import difflib
+from video_tools import generate_frames
 
 FRAMES_PATH = "tmp_frames"
 CONF_THRESH = 0.9
 SIMILARITY_THRESH = 0.8
 
-def generate_frames(video_path, rate, show_print = True):
-    # Create a new temporary folder
-    if not os.path.exists(FRAMES_PATH):
-        os.makedirs(FRAMES_PATH)
-    # Capture video
-    src_vid = cv2.VideoCapture(video_path)
-    index = 0
-    while src_vid.isOpened():
-        ret, frame = src_vid.read()
-        if not ret:
-            break
-        name = FRAMES_PATH + "/frame" + str(index) + ".png"
-        if index % rate == 0:
-            if show_print:
-                print("Frame: " + name)
-            cv2.imwrite(name, frame)
-        index = index + 1
-    src_vid.release()
 
 def add_text(text_lst, text):
     for t in text_lst:
@@ -36,7 +19,7 @@ def add_text(text_lst, text):
 
 def retrieve_text(video_path, rate = 5, show_print = True):
     texts_lst = []
-    generate_frames(video_path, rate = rate, show_print = show_print)
+    generate_frames(video_path, rate = rate, FRAMES_PATH, show_print = show_print)
     ocr = easyocr.Reader(['en'])
     for i in os.listdir(FRAMES_PATH):
         text = ocr.readtext(FRAMES_PATH + "/" + i)
