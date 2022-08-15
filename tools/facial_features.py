@@ -54,10 +54,11 @@ def data_to_vector(data):
             avg[4] += face["sad"]
             avg[5] += face["surprise"]
             avg[6] += face["neutral"]
-        for i in range(7):
-            avg[i] /= len(face)
-        vec.append(avg)
-    return avg
+        if len(frame) != 0:
+            for i in range(7):
+                avg[i] /= len(frame)
+            vec.append(avg)
+    return vec
 
 if __name__ == "__main__":
     retrieve_to_files("x", "result")
