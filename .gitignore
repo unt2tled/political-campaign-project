@@ -1492,8 +1492,5 @@ training/venv/Lib/site-packages/pip-22.0.4.dist-info/entry_points.txt
 training/venv/Lib/site-packages/distutils-precedence.pth
 training/venv/Lib/site-packages/_distutils_hack/override.py
 training/venv/Lib/site-packages/_distutils_hack/__pycache__/override.cpython-38.pyc
-training/tags.csv
-training/data/tagging.csv
-*.csv
 training/data/data.zip
 training/data.zip
