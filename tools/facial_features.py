@@ -22,7 +22,7 @@ def retrieve_faces_data(video_path, rate = 50, show_print = True):
           continue
       faces_lst.append(data_lst)
     # Delete temporary directory
-    shutil.rmtree(FRAMES_PATH)
+    #shutil.rmtree(FRAMES_PATH)
     return faces_lst
 
 def retrieve_to_file(dest, video_path):

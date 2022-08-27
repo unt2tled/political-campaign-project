@@ -3,7 +3,7 @@ import os
 import cv2
 import shutil
 import difflib
-from video_tools import generate_frames
+from tools.video_tools import generate_frames
 
 FRAMES_PATH = "tmp_frames"
 CONF_THRESH = 0.9
@@ -19,7 +19,7 @@ def add_text(text_lst, text):
 
 def retrieve_text(video_path, rate = 5, show_print = True):
     texts_lst = []
-    generate_frames(video_path, rate = rate, FRAMES_PATH, show_print = show_print)
+    generate_frames(video_path, FRAMES_PATH, rate = rate, show_print = show_print)
     ocr = easyocr.Reader(['en'])
     for i in os.listdir(FRAMES_PATH):
         text = ocr.readtext(FRAMES_PATH + "/" + i)

@@ -1,22 +1,22 @@
-'''trainer '''
 """
 This module contains CampaignTextModel class for training base/center model
+NOTE: FOR NOW, IN ORDER TO ADD SUMMARIZED_TEXT TO MODEL FEATURES WE NEED TO ADD OCR AS WELL.
 """
-!pip install transformers
-!pip install datasets
-from transformers import AutoTokenizer
+from transformers import AutoTokenizer, EarlyStoppingCallback
 from datasets import load_dataset
 from datasets import DatasetDict
 from datasets import Dataset
 from datasets import Features
 from datasets import Value
 from datasets import ClassLabel
+from datasets import Sequence
 from transformers import DataCollatorWithPadding
 from transformers import AutoModelForSequenceClassification, TrainingArguments, Trainer
 from datasets import load_metric
 import pandas as pd
 import numpy as np
-from sklearn.metrics import multilabel_confusion_matrix
+from sklearn.metrics import confusion_matrix
+from sklearn.utils import shuffle
 BASE = "BASE"
 CENTER = "CENTER"
 '''def train(self, learning_rate=2e-5, per_device_train_batch_size=30, per_device_eval_batch_size=30, epochs=5,
@@ -25,11 +25,18 @@ directions = ["CENTER","BOTH","BASE"]
 
 class CampaignTextModel:
 
-    def __init__(self, lang_model_name: str, direction):
+    def __init__(self, lang_model_name: str, direction, path_name: str,test_size: float,
+                 data_filter_func,test_name_filter_func,additional_features_dict = {}):
         self.lang_model_name = lang_model_name
         self.direction = direction
         self.trainer = None
         self.dataset = None
+        self.db_size = 0 # not initialized yet
+        self.path_name = path_name
+        self.test_size = test_size
+        self.data_filter_func = data_filter_func
+        self.test_name_filter_func = test_name_filter_func
+        self.additional_features_dict = additional_features_dict
 
     @staticmethod
     def compute_metrics(eval_pred):
@@ -37,56 +44,69 @@ class CampaignTextModel:
         metric = load_metric("accuracy")
         predictions = np.argmax(logits, axis=-1)
         return metric.compute(predictions=predictions, references=labels)
-
-    def load_data_from_csv(self, data_path: str, test_size: float):
+    def create_filtered_dataset_by_filter_names(self,filter_names):
+        filtered_df = pd.DataFrame(filter_names,columns=['name'])
+        filtered_df = filtered_df.merge(self.df,on='name')
+        filtered_df.dropna(inplace=True)
+        del filtered_df['name']
+        return Dataset.from_pandas(filtered_df,features=self.features,preserve_index=False)
+    def split_names_by_test_filter_and_test_size(self):
+        if (self.test_name_filter_func != None):
+            non_test_names = self.names[~self.names.apply(self.test_name_filter_func)]
+            test_names = self.names[self.names.apply(self.test_name_filter_func)][:int(self.db_size*(self.test_size/2))]
+        else:
+            non_test_names = self.names[:int(self.db_size*(1-self.test_size/2))]
+            test_names = self.names[int(self.db_size*(1-self.test_size/2)):]
+        return (non_test_names, test_names)
+    def load_data_from_csv(self):
         # Define features
         class_names = ["0", "1","2"] if self.direction == None else ["0","1"]
         self.class_names = class_names
-        features = Features({'text': Value('string'), 'label': ClassLabel(names=class_names)})
+        self.features_dict = {'text': Value(dtype='string'), 'label': ClassLabel(names=class_names)}
+        self.features_dict.update(self.additional_features_dict)
+        self.features = Features(self.features_dict)
         # Load dataset from csv
-        df = pd.read_csv(data_path)
-        names = df['name'].unique()
-        np.random.shuffle(names)
-        train_names = names[:int(len(names)*(1-test_size))]
-        train_df = pd.DataFrame(train_names,columns=['name'])
-        train_df = train_df.merge(df,on='name')
-        train_df.dropna(inplace=True)
-        print('train_df')
-        print(train_df[['text','label']])
-        train_dataset = Dataset.from_pandas(train_df,split="train",features=features)
-        valid_names = names[int(len(names)*(1-test_size)):int(len(names)*(1-test_size/2))]
-        valid_df = pd.DataFrame(valid_names,columns=['name'])
-        valid_df = valid_df.merge(df,on='name')
-        valid_df.dropna(inplace=True)
-        print('valid_df')
-        print(valid_df[['text','label']])
-        valid_dataset = Dataset.from_pandas(valid_df,features=features)
-        test_names = names[int(len(names)*(1-test_size/2)):]
-        test_df = pd.DataFrame(test_names,columns=['name'])
-        test_df = test_df.merge(df,on='name')
-        test_df.dropna(inplace=True)
-        print('test_df')
-        print(test_df[['text','label']])
-        test_dataset = Dataset.from_pandas(test_df,features=features)
-        #self.dataset = load_dataset("csv", data_files=data_path, split="train", features=features)
-        ## Split data into train, test and validation
-        #train_testvalid = self.dataset.train_test_split(test_size=test_size)
-        #test_valid = train_testvalid["test"].train_test_split(test_size=0.5)
-        #self.dataset = DatasetDict({
-        #    "train": train_testvalid["train"],
-        #    "test": test_valid["test"],
-        #    "valid": test_valid["train"]})
+        self.df = pd.read_csv(self.path_name)
+        # Filter data by data_filter_func if it's not None
+        if (self.data_filter_func != None):
+            self.df = self.df[self.df.apply(self.data_filter_func,axis=1)]
+        # Save unique names (don't use drop_duplicates because there are videos with the same name but different text!)
+        self.names = pd.Series(self.df['name'].unique())
+        # Consider db_size as the number of unique names
+        self.db_size = len(self.names)
+        # Shuffle names to garuantee ramdom split of the data to train-valid-test
+        np.random.shuffle(self.names)
+        # Split names by test_filter_func if it's not None and by test_size
+        non_test_names, test_names = self.split_names_by_test_filter_and_test_size()
+        # Split non_test_names to train-valid by test_size
+        train_names = non_test_names[:int(self.db_size*(1-self.test_size))]
+        valid_names = non_test_names[int(self.db_size*(1-self.test_size)):int(self.db_size*(1-self.test_size/2))]
+        # Create train-valid-test datasets
+        train_dataset = self.create_filtered_dataset_by_filter_names(train_names)
+        valid_dataset = self.create_filtered_dataset_by_filter_names(valid_names)
+        test_dataset = self.create_filtered_dataset_by_filter_names(test_names)
+        # Create dataset which wraps train-valid-test datasets as a DatasetDict
         self.dataset = DatasetDict({
             "train": train_dataset,
             "valid": valid_dataset,
             "test": test_dataset
         })
     def train(self, learning_rate=2e-5, per_device_train_batch_size=30, per_device_eval_batch_size=30, epochs=5,
-              decay=0.01):
+              decay=0.01,early_stopping_patience=3):
         # Tokenizer tuning
-        tokenizer = AutoTokenizer.from_pretrained(self.lang_model_name)
+        def my_tokenizer(examples,tokenizer): #return tokenizer
+            print(examples,type(examples))
+            return tokenizer([examples[text_feature] for text_feature in self.text_features_list],padding=True, truncation=True)
+        tokenizer = AutoTokenizer.from_pretrained(self.lang_model_name) #bert tokenizer
         self.tokenizer = tokenizer
-        tokenized_ds = self.dataset.map(lambda examples: tokenizer(examples["text"], truncation=True), batched=True)
+        self.text_features_list = [k for k in self.additional_features_dict if self.additional_features_dict[k].dtype == 'String']
+        if (len(self.text_features_list)==0):
+            tokenized_ds = self.dataset.map(lambda examples: tokenizer(examples["text"], truncation=True), batched=True)
+        elif (len(self.text_features_list)==1):
+            tokenized_ds = self.dataset.map(lambda examples: tokenizer(examples["text"],examples[self.text_features_list[0]], truncation=True), batched=True)
+        else:
+            self.text_features_list.append('text')
+            tokenized_ds = self.dataset.map(lambda examples: my_tokenizer(examples,tokenizer), batched=True)
         data_collator = DataCollatorWithPadding(tokenizer=tokenizer)
         model = AutoModelForSequenceClassification.from_pretrained(self.lang_model_name, num_labels=2+(self.direction==None))
         # Trainer parameters
@@ -98,7 +118,9 @@ class CampaignTextModel:
             num_train_epochs=epochs,
             weight_decay=decay,
             evaluation_strategy="epoch",
+            save_strategy="epoch",
             logging_steps=5,
+            load_best_model_at_end = True
         )
         trainer = Trainer(
             model=model,
@@ -108,11 +130,11 @@ class CampaignTextModel:
             tokenizer=tokenizer,
             compute_metrics=CampaignTextModel.compute_metrics,
             data_collator=data_collator,
+            callbacks = [EarlyStoppingCallback(early_stopping_patience = early_stopping_patience)]
         )
         # Train model
         trainer.train()
-        self.trainer = trainer
-        #print(trainer)       
+        self.trainer = trainer       
 
     def predict(self, tokenized_ds, return_number=False):
         print('tokenized_ds')
@@ -133,14 +155,9 @@ class CampaignTextModel:
         # Build dataset with one row
         print(text_string)
         data_to_predict = Dataset.from_dict({"text": [text_string]})
-        print('data_to_predict')
+        print('data_to_predict')  
         print(data_to_predict.data)
-        def tokenizer(examples):
-            #print('#####')
-            #print(examples)
-            #print('#####')
-            return self.tokenizer(examples["text"], truncation=True)
-        tokenized_ds = data_to_predict.map(lambda examples: tokenizer(examples), batched=False)
+        tokenized_ds = data_to_predict.map(lambda examples: self.tokenizer(examples["text"], truncation=True), batched=False)
         print('tokenized_ds')
         print(tokenized_ds)
         predictions = self.trainer.predict(tokenized_ds)
@@ -156,60 +173,11 @@ class CampaignTextModel:
         return self.direction if pred_num else "NOT_" + self.direction
   
     def predict_by_dataset(self, ds: Dataset, return_number=False, isDataSet = True):
-        def tokenizer(examples):
-            #print('#####')
-            #print(examples)
-            #print('#####')
-            return self.tokenizer(examples["text"], truncation=True)
-        tokenized_ds = ds.map(lambda examples: tokenizer(examples), batched=False)
+        tokenized_ds = ds.map(lambda examples: self.tokenizer(examples["text"], truncation=True), batched=False)
         print("tokenized ds")
         print(tokenized_ds)
         predictions = self.trainer.predict(tokenized_ds)
-        #print("predictions")
-        #print(predictions)
         pred = np.argmax(predictions.predictions, axis = -1)
         print("pred")
         print(pred)
         return pred
-    '''
-    def calc_confusion_matrix(self, predictions, true_labels):
-      confusion_matrix = np.zeros((2,2))
-      for i in range(len(predictions)):
-        if(predictions[i] == 1):
-          if(true_labels[i] == 1):
-            confusion_matrix[0][0]+=1
-          else:
-            confusion_matrix[0][1]+=1
-        else:
-          if(true_labels[i]==1):
-            confusion_matrix[1][0]+=1
-          else:
-            confusion_matrix[1][1]+=1
-      return confusion_matrix
-    '''
-        
-if __name__ == "__main__":
-    text = "The crime Medicare fraud. The victims American taxpayers. The boss Mitt Romney Romney supervised to company guilty. A massive Medicare fraud. That's a fact. 25 million dollars in unnecessary blood tests. Right under Romney's nose."
-    m = CampaignTextModel("distilbert-base-uncased", None)
-    m.load_data_from_csv("tags_double.csv", 0.4)
-    print(m.dataset)
-    for i in range(5):
-        print("*******iteration number %d"%i)
-        m.dataset = m.dataset.shuffle(seed = 3*i+1)
-        m.train(epochs=40)
-        #print("#################### test ################")
-        #print("dataset test")
-        #print(m.dataset["test"])
-        test_pred = m.predict_by_dataset(m.dataset["test"])
-        #print("test pred")
-        #print(test_pred)
-        true_labels = m.dataset["test"]["label"]
-        print("true labels")
-        print(true_labels)
-        num_correct = np.sum([test_pred[i] == true_labels[i] for i in range(len(test_pred))])
-        #print("num correct")
-        #print(num_correct)
-        print(num_correct/len(test_pred) * 100)
-        M = multilabel_confusion_matrix(true_labels,test_pred,labels=list(range(2 if m.direction != None else 3)))
-        print(M)
-        #print(len(test_pred))
