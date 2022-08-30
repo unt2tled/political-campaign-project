@@ -54,8 +54,7 @@ def get_large_audio_transcription(path):
     return whole_text
 
 st.title("Demo page")
-st.markdown("""Upload the US political campaign video to predict its orientation (base/center). 
-         To train the model go to "**Training**" section.""")
+st.markdown("""Upload the US political campaign video to predict its orientation (base/center).""")
 video_file = st.file_uploader("Choose the US political campaign video", type=["wmv", "avi", "mov"])
 if video_file is not None:
     status_bar = st.progress(0)
