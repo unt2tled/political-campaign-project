@@ -107,3 +107,12 @@ class SummarizationClassRun:
         del df['summarized_text']
         # export output with the overridden text column to CSV file
         df.to_csv(self.output_file_path_override_text_column,encoding='cp1255',index=False)
+
+if __name__ == '__main__':
+    # Arguments
+    INPUT_FILE_PATH = 'tagging_MMD_db.csv'
+    TEXT_COLUMN = 'text'
+    OUTPUT_FILE_PATH_KEEP_ORIGINAL_TEXT_COLUMN = 'tagging_MMD_db_with_summarized.csv'
+    OUTPUT_FILE_PATH_OVERRIDE_TEXT_COLUMN = 'summarized_tagging_MMD_db.csv'
+    obj = SummarizationClassRun(INPUT_FILE_PATH,TEXT_COLUMN,OUTPUT_FILE_PATH_KEEP_ORIGINAL_TEXT_COLUMN,OUTPUT_FILE_PATH_OVERRIDE_TEXT_COLUMN)
+    obj.run()

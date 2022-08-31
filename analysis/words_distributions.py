@@ -5,9 +5,9 @@ import pandas as pd
 import numpy as np
 
 class WordsDistributionClass:
-    """ This class is for creating a dataframe with the frequencies
+    ''' This class is for creating a dataframe with the frequencies
         of the words in the text column of the input file, in addition
-        to the file's original columns. """
+        to the file's original columns. '''
     def __init__(self,input_file_path,output_file_path,text_column='text'):
         self.input_file_path = input_file_path
         self.output_file_path = output_file_path
@@ -59,3 +59,13 @@ class WordsDistributionClass:
     def save_output(self):
         #export dataframe to output CSV file path
         self.df.to_csv(self.output_file_path,index=False)
+
+if __name__ == "__main__":
+    # Arguments
+    INPUT_FILE_NAME = 'tagging_MMD_db_with_face_sentiment_extracted.csv'
+    OUTPUT_FILE_NAME = 'tagging_MMD_db_with_face_sentiment_extracted_and_words_distributions.csv'
+
+    # Run WordsDistributionClass on the given input
+    wdc = WordsDistributionClass(INPUT_FILE_NAME,OUTPUT_FILE_NAME)
+    wdc.initialize_data()
+    wdc.save_output()
