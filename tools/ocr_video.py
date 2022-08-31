@@ -3,21 +3,19 @@ import os
 import cv2
 import shutil
 import difflib
-import enchant
 import re
 from tools.video_tools import generate_frames
 
 CONF_THRESH = 0.9
 SIMILARITY_THRESH = 0.8
 
-d = enchant.Dict("en_US")
 def process_text(text):
     result = re.sub(r"[\n\"\[\]~;]", "", text)
     lst = result.split()
     s = ""
     for item in lst:
         item = item.strip()
-        if (d.check(item) and len(item)!=1) or item == "a" or item == "I" or item == "i" or item == "A":
+        if len(item)!=1 or item == "a" or item == "I" or item == "i" or item == "A":
             s += " "+item
     if len(s)<6:
         s = ""
