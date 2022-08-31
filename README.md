@@ -8,4 +8,4 @@ All the code used for features extraction is in the tools directory.
 ### Training model
 To train the model use Google Colab.
 ### Demo
-Example UI of a model with accuracy of ~80% using speech-to-text and text from video features can be found [here](https://unt2tled-political-campaign-project-demo-6gbfbd.streamlitapp.com/).
+Example UI of a pre-trained model with test accuracy of ~80% using speech-to-text and text from video features can be found [here](https://unt2tled-political-campaign-project-demo-6gbfbd.streamlitapp.com/).
