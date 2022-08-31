@@ -1,2 +1,8 @@
 easyocr
 cv
+transformers
+datasets
+numpy
+pandas
+torch
+pyenchant

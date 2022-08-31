@@ -3,12 +3,33 @@ import os
 import cv2
 import shutil
 import difflib
+import enchant
+import re
 from tools.video_tools import generate_frames
 
-FRAMES_PATH = "tmp_frames"
 CONF_THRESH = 0.9
 SIMILARITY_THRESH = 0.8
 
+d = enchant.Dict("en_US")
+def process_text(text):
+    result = re.sub(r"[\n\"\[\]~;]", "", text)
+    lst = result.split()
+    s = ""
+    for item in lst:
+        item = item.strip()
+        if (d.check(item) and len(item)!=1) or item == "a" or item == "I" or item == "i" or item == "A":
+            s += " "+item
+    if len(s)<6:
+        s = ""
+    return s
+
+def get_formated_text(texts_arr):
+    res = ""
+    for row in texts_arr:
+        k = process_text(row.lower())
+        if len(k) > 0:
+            res += process_text(row.lower()) + ", "
+    return res[:-2]
 
 def add_text(text_lst, text):
     for t in text_lst:
@@ -17,19 +38,19 @@ def add_text(text_lst, text):
           return
     text_lst.append(text)
 
-def retrieve_text(video_path, rate = 5, show_print = True):
+def retrieve_text(video_path, rate = 5, frames_path = "tmp_frames", show_print = True):
     texts_lst = []
-    generate_frames(video_path, FRAMES_PATH, rate = rate, show_print = show_print)
+    generate_frames(video_path, frames_path, rate = rate, show_print = show_print)
     ocr = easyocr.Reader(['en'])
-    for i in os.listdir(FRAMES_PATH):
-        text = ocr.readtext(FRAMES_PATH + "/" + i)
+    for i in os.listdir(frames_path):
+        text = ocr.readtext(frames_path + "/" + i)
         for txt in text:
           # Threshold for confidence
           if txt[2] > CONF_THRESH:
             # Filter similar texts
             add_text(texts_lst, txt[1])
     # Delete temporary directory
-    shutil.rmtree(FRAMES_PATH)
+    shutil.rmtree(frames_path)
     return texts_lst
 
 def retrieve_to_file(dest, video_path):
