@@ -3,6 +3,8 @@ Deep learning pipelines to predict the target of political messages.
 ## About
 The goal of this project is to present machine learning approach of classification political campaign videos from the USA of different years by target audience (base/center). The classification is done by extracting different features from the video (e.g., speech-to-text, visual data) and training a neural network. More details can be found in the related [paper]().
 ## Navigation
+### Dataset
+Datasets, including extracted features, tagging files and political campaign videos to train on can be found [here](https://drive.google.com/drive/folders/1-7rkd_SozNGLrNHXnEZ0iTKqO9ztKhiU?usp=sharing).
 ### Features extraction
 All the code used for features extraction is in the */tools* directory.
 ### Analysis
