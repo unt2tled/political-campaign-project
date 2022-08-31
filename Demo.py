@@ -29,7 +29,7 @@ if video_file is not None and b:
     with open(TMP_PATH+"uploaded_video_tmp", "wb") as f:
         f.write(video_file.getbuffer())
     status_bar.progress(50)
-    upload_cap.caption("Extracting text from frames...")
+    upload_cap.caption("Extracting text from frames... (can take some time)")
     text_ocr = ocr.get_formated_text(ocr.retrieve_text(TMP_PATH+"uploaded_video_tmp", frames_path = "tmp_frames-{"+str(st.session_state["session_id"])+"}", show_print = False))
     status_bar.progress(80)
     
