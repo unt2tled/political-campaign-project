@@ -10,7 +10,7 @@ Code for model analysis is in the */analysis* directory.
 ### Training model
 To train the model use [this](https://colab.research.google.com/drive/1ceVEWRAkIQJsOGuMxmG2qvPY3huZf8gc?usp=sharing) Google Colab notebook. [This](https://colab.research.google.com/drive/1MH19zWCCqQFTKidT5qq6pIPbmsdyuAIp?usp=sharing) notebook is used to make predictions from the pre-trained model.
 ### Demo
-Example UI of a pre-trained model with test accuracy of ~80% using speech-to-text and text from video features can be found [here](https://unt2tled-political-campaign-project-demo-6gbfbd.streamlitapp.com/) or by cloning the repository and calling from the root:
+Example UI of a pre-trained model with test accuracy of ~80% using speech-to-text and text from video features can be found [here](https://unt2tled-political-campaign-project-demo-6gbfbd.streamlitapp.com/) or by cloning the repository and calling from the project's root:
 ```
 pip install streamlit
 streamlit run Demo.py
