@@ -1,3 +1,6 @@
+"""
+This module contains methods for video processing
+"""
 import os
 import cv2
 

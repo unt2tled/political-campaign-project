@@ -1,3 +1,6 @@
+"""
+This module allows to extract texts from videos using OCR
+"""
 import easyocr
 import os
 import cv2

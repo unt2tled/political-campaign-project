@@ -1,3 +1,6 @@
+"""
+This module contains methods for texts linguistic analysis
+"""
 import csv
 import re
 import matplotlib.pyplot as plt

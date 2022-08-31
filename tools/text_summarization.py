@@ -1,3 +1,6 @@
+"""
+This module is for text summarization
+"""
 # ref: https://towardsdatascience.com/understand-text-summarization-and-create-your-own-summarizer-in-python-b26a9f09fc70
 import nltk
 nltk.download('stopwords')
@@ -6,16 +9,6 @@ from nltk.cluster.util import cosine_distance
 import pandas as pd
 import numpy as np
 import networkx as nx
-
-#################################################################
-########################## READ ME ##############################
-### This code is for summarizing text. We use here extractive ###
-### summarization, i.e. the summarization of the text is      ###
-### the sentence with the highest correspondence rate to the  ###
-### other sentences in the text. It is used as a validated    ###
-### feature in our dataset.                                   ###
-########################### ENJOY! ##############################
-#################################################################
 
 class SummarizationClass:
     def read_text(text):

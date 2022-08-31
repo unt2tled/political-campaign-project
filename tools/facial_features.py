@@ -1,3 +1,6 @@
+"""
+This module allows to extract facial deatures from videos
+"""
 import os
 import shutil
 from retinaface import RetinaFace

@@ -1,8 +1,9 @@
+"""
+This module containes methods for words classification using desicion trees
+"""
 from __future__ import print_function
-
 import os
 import subprocess
-
 import pandas as pd
 import numpy as np
 from sklearn.tree import DecisionTreeClassifier, plot_tree

@@ -1,10 +1,13 @@
+"""
+This module contains classes and methods for words distribution analysis 
+"""
 import pandas as pd
 import numpy as np
 
 class WordsDistributionClass:
-    ''' This class is for creating a dataframe with the frequencies
+    """ This class is for creating a dataframe with the frequencies
         of the words in the text column of the input file, in addition
-        to the file's original columns. '''
+        to the file's original columns. """
     def __init__(self,input_file_path,output_file_path,text_column='text'):
         self.input_file_path = input_file_path
         self.output_file_path = output_file_path

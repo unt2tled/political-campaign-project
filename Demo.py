@@ -1,3 +1,6 @@
+"""
+Demo UI page
+"""
 import streamlit as st
 import tools.ocr_video as ocr
 import os
@@ -43,4 +46,3 @@ if video_file is not None and b:
     
     status_bar.progress(100)
     upload_cap.caption("Done")
-    print(text_ocr)
