@@ -6,7 +6,7 @@ The goal of this project is to present machine learning approach of classificati
 ### Features extraction
 All the code used for features extraction is in the */tools* directory.
 ### Analysis
-Code for model analysis is the */analysis* directory.
+Code for model analysis is in the */analysis* directory.
 ### Training model
 To train the model use [Google Colab](https://colab.research.google.com/drive/1ceVEWRAkIQJsOGuMxmG2qvPY3huZf8gc?usp=sharing).
 ### Demo
