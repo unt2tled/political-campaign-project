@@ -1,15 +1,25 @@
 # ref: https://towardsdatascience.com/understand-text-summarization-and-create-your-own-summarizer-in-python-b26a9f09fc70
-
-
-
+import nltk
+nltk.download('stopwords')
 from nltk.corpus import stopwords
 from nltk.cluster.util import cosine_distance
 import pandas as pd
 import numpy as np
 import networkx as nx
 
+#################################################################
+########################## READ ME ##############################
+### This code is for summarizing text. We use here extractive ###
+### summarization, i.e. the summarization of the text is      ###
+### the sentence with the highest correspondence rate to the  ###
+### other sentences in the text. It is used as a validated    ###
+### feature in our dataset.                                   ###
+########################### ENJOY! ##############################
+#################################################################
+
 class SummarizationClass:
     def read_text(text):
+        text = text.replace("\"","")
         article = text.split(". ")
         sentences = []
 
@@ -64,38 +74,43 @@ class SummarizationClass:
         summarize_text = []
 
         # Step 1 - Read text anc split it
-        #print("before")
-        #print(text)
         sentences =  SummarizationClass.read_text(text)
-        #print("after")
-        #print(sentences)
         # Step 2 - Generate Similary Martix across sentences
         sentence_similarity_martix = SummarizationClass.build_similarity_matrix(sentences, stop_words)
 
         # Step 3 - Rank sentences in similarity martix
         sentence_similarity_graph = nx.from_numpy_array(sentence_similarity_martix)
-        print(sentence_similarity_graph)
+        #print(sentence_similarity_graph)
         try:
             scores = nx.pagerank(sentence_similarity_graph)
 
             # Step 4 - Sort the rank and pick top sentences
-            ranked_sentence = sorted(((scores[i],s) for i,s in enumerate(sentences)), reverse=True)    
-            #print("Indexes of top ranked_sentence order are ", ranked_sentence)    
+            ranked_sentence = sorted(((scores[i],s) for i,s in enumerate(sentences)), reverse=True)      
 
             for i in range(top_n):
-                #print(ranked_sentence)
                 summarize_text.append(" ".join(ranked_sentence[i][1]))
         except nx.exception.PowerIterationFailedConvergence:
             print(f'text={text} was bad for nx')
             return ''
         # Step 5 - Offcourse, output the summarize texr
-        #print("Summarize Text: \n", ". ".join(summarize_text))
         return ". ".join(summarize_text)
 
-
-input_file_path = 'tagging.csv'
-output_file_path = 'summarized_tagging.csv'
-
-df = pd.read_csv(input_file_path,encoding='utf8')
-df['summarized_text'] = df['text'].apply(lambda x: SummarizationClass.generate_summary(x, 1))
-df.to_csv(output_file_path,encoding='utf8',index=False)
+class SummarizationClassRun:
+    ''' class for running the summarization class algorithm with given parameters '''
+    def __init__(self,input_file_path,text_column,output_file_path_keep_original_text_column):
+        self.input_file_path = input_file_path
+        self.text_column = text_column
+        self.output_file_path_keep_original_text_column = output_file_path_keep_original_text_column
+        self.output_file_path_override_text_column = output_file_path_override_text_column
+    def run(self):
+        # read input file as a dataframe
+        df = pd.read_csv(self.input_file_path,encoding='cp1255')
+        # add column with summarization of the text in the text column
+        df['summarized_text'] = df[self.text_column].apply(lambda x: SummarizationClass.generate_summary(x, 1))
+        # export output with the original text column to CSV file
+        df.to_csv(self.output_file_path_keep_original_text_column,encoding='cp1255',index=False)
+        # override original text column
+        df[self.text_column] = df['summarized_text']
+        del df['summarized_text']
+        # export output with the overridden text column to CSV file
+        df.to_csv(self.output_file_path_override_text_column,encoding='cp1255',index=False)
