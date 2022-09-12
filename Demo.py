@@ -35,6 +35,7 @@ if b:
     upload_cap.caption("Extracting text sentiment...")
     sentiment_analysis = pipeline("sentiment-analysis",model="siebert/sentiment-roberta-large-english")
     text_sentiment = sentiment_analysis(text)[0]["label"]
+    del sentiment_analysis
     status_bar.progress(80)
     
     #shutil.rmtree(TMP_PATH)
