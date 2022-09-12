@@ -10,10 +10,6 @@ from model_loader import HFPretrainedModel
 from transformers import pipeline
 import torch
 
-@st.cache(allow_output_mutation=True, suppress_st_warning=True)
-def get_sentiment_pipeline():
-    return pipeline("sentiment-analysis",model="siebert/sentiment-roberta-large-english")
-
 if "session_id" not in st.session_state:
     st.session_state["session_id"] = uuid.uuid1()
     
@@ -38,10 +34,8 @@ if b:
     #upload_cap.caption("Extracting text from frames... (can take some time)")
     #text_ocr = ocr.get_formated_text(ocr.retrieve_text(TMP_PATH+"uploaded_video_tmp", frames_path = "tmp_frames-{"+str(st.session_state["session_id"])+"}", show_print = False))
     upload_cap.caption("Extracting text sentiment...")
-    sentiment_analysis = get_sentiment_pipeline()
-    torch.cuda.empty_cache()
+    sentiment_analysis = pipeline("sentiment-analysis", model="siebert/sentiment-roberta-large-english")
     text_sentiment = sentiment_analysis(text)[0]["label"]
-    del sentiment_analysis
     status_bar.progress(80)
     
     #shutil.rmtree(TMP_PATH)
