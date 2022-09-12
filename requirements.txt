@@ -1,6 +1,4 @@
-easyocr
-cv
-transformers
+dtransformers
 datasets
 numpy
 pandas
