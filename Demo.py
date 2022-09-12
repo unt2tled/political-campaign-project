@@ -17,7 +17,7 @@ TMP_PATH = "tmp-{"+str(st.session_state["session_id"])+"}/"
 
 st.title("Demo page")
 st.markdown("""Upload the US political campaign video to predict its orientation (base/center).""")
-video_file = st.file_uploader("Choose the US political campaign video", type=["wmv", "avi", "mov"])
+video_file = st.file_uploader("Choose the US political campaign video", type=["wmv", "avi", "mov"], disabled=True)
 text = st.text_input("Transcript of the video", "")
 b = st.button("Predict")
 if video_file is not None and b:
