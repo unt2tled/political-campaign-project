@@ -7,6 +7,7 @@ import os
 import shutil
 import uuid
 from model_loader import HFPretrainedModel
+from transformers import pipeline
 
 if "session_id" not in st.session_state:
     st.session_state["session_id"] = uuid.uuid1()
@@ -29,15 +30,19 @@ if video_file is not None and b:
     with open(TMP_PATH+"uploaded_video_tmp", "wb") as f:
         f.write(video_file.getbuffer())
     status_bar.progress(50)
-    upload_cap.caption("Extracting text from frames... (can take some time)")
-    text_ocr = ocr.get_formated_text(ocr.retrieve_text(TMP_PATH+"uploaded_video_tmp", frames_path = "tmp_frames-{"+str(st.session_state["session_id"])+"}", show_print = False))
+    #upload_cap.caption("Extracting text from frames... (can take some time)")
+    #text_ocr = ocr.get_formated_text(ocr.retrieve_text(TMP_PATH+"uploaded_video_tmp", frames_path = "tmp_frames-{"+str(st.session_state["session_id"])+"}", show_print = False))
+    upload_cap.caption("Extracting text sentiment...")
+    sentiment_analysis = pipeline("sentiment-analysis",model="siebert/sentiment-roberta-large-english")
+    text_sentiment = sentiment_analysis(text)[0]["label"]
     status_bar.progress(80)
     
     shutil.rmtree(TMP_PATH)
     status_bar.progress(90)
     upload_cap.caption("Prediction...")
-    model = HFPretrainedModel("distilbert-base-uncased", "deano/political-campaign-analysis")
-    query_dict = {"text": [text], "text_ocr": [text_ocr]}
+    model = HFPretrainedModel("distilbert-base-uncased", "deano/political-campaign-analysis-110922")
+    #query_dict = {"text": [text], "text_ocr": [text_ocr]}
+    query_dict = {"text": [text], "label_sentiment": [text_sentiment]}
     # Predicted confidence for each label
     conf = model.predict(query_dict)
     col1, col2 = st.columns(2)
