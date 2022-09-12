@@ -22,8 +22,8 @@ text = st.text_input("Transcript of the video", "")
 b = st.button("Predict")
 if b:
     st.markdown("""---""")
-    #status_bar = st.progress(0)
-    #upload_cap = st.caption("Uploading video...")
+    status_bar = st.progress(0)
+    upload_cap = st.caption("Uploading video...")
     #if os.path.isdir(TMP_PATH):
     #    shutil.rmtree(TMP_PATH)
     #os.mkdir(TMP_PATH)
