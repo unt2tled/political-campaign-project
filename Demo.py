@@ -20,7 +20,7 @@ st.markdown("""Upload the US political campaign video to predict its orientation
 video_file = st.file_uploader("Choose the US political campaign video", type=["wmv", "avi", "mov"], disabled=True)
 text = st.text_input("Transcript of the video", "")
 b = st.button("Predict")
-if video_file is not None and b:
+if b:
     st.markdown("""---""")
     status_bar = st.progress(0)
     upload_cap = st.caption("Uploading video...")
