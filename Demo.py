@@ -22,13 +22,13 @@ text = st.text_input("Transcript of the video", "")
 b = st.button("Predict")
 if b:
     st.markdown("""---""")
-    status_bar = st.progress(0)
-    upload_cap = st.caption("Uploading video...")
-    if os.path.isdir(TMP_PATH):
-        shutil.rmtree(TMP_PATH)
-    os.mkdir(TMP_PATH)
-    with open(TMP_PATH+"uploaded_video_tmp", "wb") as f:
-        f.write(video_file.getbuffer())
+    #status_bar = st.progress(0)
+    #upload_cap = st.caption("Uploading video...")
+    #if os.path.isdir(TMP_PATH):
+    #    shutil.rmtree(TMP_PATH)
+    #os.mkdir(TMP_PATH)
+    #with open(TMP_PATH+"uploaded_video_tmp", "wb") as f:
+    #    f.write(video_file.getbuffer())
     status_bar.progress(50)
     #upload_cap.caption("Extracting text from frames... (can take some time)")
     #text_ocr = ocr.get_formated_text(ocr.retrieve_text(TMP_PATH+"uploaded_video_tmp", frames_path = "tmp_frames-{"+str(st.session_state["session_id"])+"}", show_print = False))
@@ -37,7 +37,7 @@ if b:
     text_sentiment = sentiment_analysis(text)[0]["label"]
     status_bar.progress(80)
     
-    shutil.rmtree(TMP_PATH)
+    #shutil.rmtree(TMP_PATH)
     status_bar.progress(90)
     upload_cap.caption("Prediction...")
     model = HFPretrainedModel("distilbert-base-uncased", "deano/political-campaign-analysis-110922")
