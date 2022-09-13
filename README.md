@@ -17,13 +17,4 @@ Example UI of a pre-trained model with test accuracy of ~80% using speech-to-tex
 pip install streamlit
 streamlit run Demo.py
 ```
----
-title: Political Campaign Project
-emoji: 📉
-colorFrom: purple
-colorTo: blue
-sdk: streamlit
-sdk_version: 1.12.0
-app_file: Demo.py
-pinned: true
----
+
