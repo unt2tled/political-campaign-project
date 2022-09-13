@@ -10,11 +10,11 @@ from model_loader import HFPretrainedModel
 from transformers import pipeline
 import torch
 
-@st.cache(hash_funcs={"MyUnhashableClass": lambda _: None}
+@st.cache(hash_funcs={"MyUnhashableClass": lambda _: None})
 def load_sentiment_model():
     return pipeline("sentiment-analysis", model="siebert/sentiment-roberta-large-english")
     
-@st.cache(hash_funcs={"MyUnhashableClass": lambda _: None}
+@st.cache(hash_funcs={"MyUnhashableClass": lambda _: None})
 def load_campaign_model():
     return HFPretrainedModel("distilbert-base-uncased", "deano/political-campaign-analysis-110922")
 
