@@ -7,6 +7,7 @@ from retinaface import RetinaFace
 from deepface import DeepFace
 import json
 from video_tools import generate_frames
+import matplotlib.pyplot as plt
 
 FRAMES_PATH = "tmp_frames_faces"
 
@@ -27,6 +28,33 @@ def retrieve_faces_data(video_path, rate = 50, show_print = True):
     # Delete temporary directory
     #shutil.rmtree(FRAMES_PATH)
     return faces_lst
+    
+def analyze_video_emotions(video_path, rate = 50):
+    faces_lst = []
+    print("#------Frames generation------#")
+    generate_frames(video_path, FRAMES_PATH, rate = rate, show_print = True)
+    for i in sorted([int(s[:-4]) for s in os.listdir(FRAMES_PATH)]):
+      img_path = FRAMES_PATH + "/" + str(i) + ".png"
+      faces = RetinaFace.detect_faces(img_path)
+      print("#------Frame #{0}------#".format(i))
+      data_lst = []
+      if type(faces) != tuple:
+        for face_name, face_data in faces.items():
+          facial_area = face_data["facial_area"]
+          print("     #------Face {0}------#".format(face_name))
+          print(face_data)
+          img = cv2.imread(img_path)
+          face = img[facial_area[1]: facial_area[3], facial_area[0]: facial_area[2]]
+          try:
+            face_emot_dict = DeepFace.analyze(face, actions = ["emotion"], detector_backend = "skip")
+            print("     #------Face emotion------#")
+            print(face_emot_dict)
+            plt.imshow(face)
+            plt.show()
+            data_lst.append(face_emot_dict["emotion"])
+          except ValueError:
+            # Face was not detected
+            continue
 
 def retrieve_to_file(dest, video_path):
   face_data = retrieve_faces_data(video_path, show_print = False)
@@ -64,4 +92,4 @@ def data_to_vector(data):
     return vec
 
 if __name__ == "__main__":
-    retrieve_to_files("x", "result")
+    analyze_video_emotions("PRES_45COMMITTEE_50_POINTS_AHEAD.wmv")
