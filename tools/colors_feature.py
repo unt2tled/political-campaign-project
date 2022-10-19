@@ -1,7 +1,6 @@
 # ref: https://towardsdatascience.com/building-an-image-color-analyzer-using-python-12de6b0acf74
 from collections import Counter
 from sklearn.cluster import KMeans
-from sklearn.cluster import SpectralClustering
 from matplotlib import colors
 import matplotlib.pyplot as plt
 import numpy as np
