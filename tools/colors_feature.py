@@ -6,6 +6,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import cv2
 import shutil
+from video_tools import generate_frames
+import os
 
 FRAMES_PATH = "tmp_frames_colors"
 
@@ -22,7 +24,7 @@ def prep_image(raw_img):
     return modified_img
 
 def color_analysis(img, show_diagram = False):
-    clf = KMeans(n_clusters = 8, n_init = 50, max_iter = 500)
+    clf = KMeans(n_clusters = 5, n_init = 20, max_iter = 300)
     color_labels = clf.fit_predict(img)
     center_colors = clf.cluster_centers_
     counts = Counter(color_labels)
@@ -57,3 +59,6 @@ def retrieve_colors_from_video(video_path, rate = 5, show_print = True, threshol
     # Delete temporary directory
     shutil.rmtree(FRAMES_PATH)
     return color_analysis(modified_image)
+    
+if __name__ == "__main__":
+    print(retrieve_colors_from_video("PRES_ABTT_EPISODE_IV_A_NEW_HOPE_60.wmv"))
