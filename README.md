@@ -8,7 +8,7 @@ Datasets, including extracted features, tagging files and political campaign vid
 ### Features extraction
 All the code used for features extraction is in the */tools* directory.
 ### Analysis
-Code for model analysis is in the */analysis* directory.
+Code for model analysis is in the */analysis* directory. [This](https://colab.research.google.com/drive/19RLpj0W5k1WzRj0UOJO9J-vq_F-kbAkU?usp=sharing) Google Colab notebook is used for face sentiment and color analysis from videos.
 ### Training model
 To train the model use [this](https://colab.research.google.com/drive/1ceVEWRAkIQJsOGuMxmG2qvPY3huZf8gc?usp=sharing) Google Colab notebook. [This](https://colab.research.google.com/drive/1MH19zWCCqQFTKidT5qq6pIPbmsdyuAIp?usp=sharing) notebook is used to make predictions from the pre-trained model.
 ### Demo
